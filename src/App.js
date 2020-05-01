@@ -5,9 +5,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { history } from './_helpers';
 import { alertActions } from './_actions';
 import { PrivateRoute, AuthorizationRoute } from './_components';
-import { RegisterPage } from './RegisterPage';
-import { LoginPage } from './LoginPage';
-import { HomePage } from './HomePage';
+import { RegisterPage } from './_containers/RegisterPage';
+import { HomePage } from './_containers/HomePage';
+import { LoginPage } from './_containers/LoginPage';
 
 function App() {
   const alert = useSelector((state) => state.alert);

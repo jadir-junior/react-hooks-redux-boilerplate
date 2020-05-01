@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { authenticationActions } from '../_actions';
+import { authenticationActions } from '../../_actions';
 
 function RegisterPage() {
   const [user, setUser] = useState({
