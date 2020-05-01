@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { userActions } from '../_actions';
+import { authenticationActions } from '../_actions';
 
 function LoginPage() {
   const [inputs, setInputs] = useState({
@@ -26,7 +26,7 @@ function LoginPage() {
 
     setSubmitted(true);
     if (email && password) {
-      dispatch(userActions.login(email, password));
+      dispatch(authenticationActions.login(email, password));
     }
   }
 

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { userActions } from '../_actions';
+import { authenticationActions } from '../_actions';
 
 function RegisterPage() {
   const [user, setUser] = useState({
@@ -25,7 +25,7 @@ function RegisterPage() {
 
     setSubmitted(true);
     if (user.name && user.email && user.password) {
-      dispatch(userActions.register(user));
+      dispatch(authenticationActions.register(user));
     }
   }
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { userActions } from '../_actions';
+import { authenticationActions, userActions } from '../_actions';
 
 function HomePage() {
   const user = useSelector((state) => state.user);
@@ -11,7 +11,7 @@ function HomePage() {
   }, [dispatch]);
 
   function logout() {
-    dispatch(userActions.logout());
+    dispatch(authenticationActions.logout());
   }
 
   return (
