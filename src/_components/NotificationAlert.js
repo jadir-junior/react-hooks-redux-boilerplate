@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Snackbar from '@material-ui/core/Snackbar';
 import { Alert } from '@material-ui/lab';
+import { useDispatch } from 'react-redux';
 
-// function Alert(props) {
-//   return <Alert  {...props} />;
-// }
+import { alertActions } from '../_actions';
 
 export default function NotificationAlert(props) {
   const [open, setOpen] = React.useState(true);
+  const dispatch = useDispatch();
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -16,6 +16,12 @@ export default function NotificationAlert(props) {
 
     setOpen(false);
   };
+
+  useEffect(() => {
+    return () => {
+      dispatch(alertActions.clear());
+    };
+  });
 
   return (
     <Snackbar

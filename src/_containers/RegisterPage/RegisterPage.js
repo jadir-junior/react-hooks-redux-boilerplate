@@ -9,11 +9,20 @@ import {
   Button,
   Grid,
   makeStyles,
+  IconButton,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  FormHelperText,
 } from '@material-ui/core';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import { useForm } from 'react-hook-form';
 
 import { authenticationActions } from '../../_actions';
+
 import { validation } from '../../_helpers';
 
 const useStyles = makeStyles((theme) => ({
@@ -34,6 +43,9 @@ const useStyles = makeStyles((theme) => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
+  textField: {
+    width: '100%',
+  },
 }));
 
 function RegisterPage() {
@@ -42,24 +54,25 @@ function RegisterPage() {
     mode: 'onBlur',
   });
   const [user, setUser] = useState({
-    name: '',
-    email: '',
-    password: '',
-    repeatPassword: '',
+    showPassword: false,
+    showRepeatPassword: false,
   });
 
   const registering = useSelector((state) => state.registration.registering);
   const dispatch = useDispatch();
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setUser((user) => ({ ...user, [name]: value }));
+  function onSubmit(data) {
+    if (data.name && data.email && data.password && data.repeatPassword) {
+      dispatch(authenticationActions.register(data));
+    }
   }
 
-  function onSubmit() {
-    if (user.name && user.email && user.password && user.repeatPassword) {
-      dispatch(authenticationActions.register(user));
-    }
+  function handleClickShowPassword(type) {
+    setUser({ ...user, [type]: !user[type] });
+  }
+
+  function handleMouseDownPassword(event) {
+    event.preventDefault();
   }
 
   return (
@@ -89,7 +102,6 @@ function RegisterPage() {
             name="name"
             autoComplete="name"
             autoFocus
-            onChange={handleChange}
             inputRef={register({
               required: 'O nome é obrigatório',
             })}
@@ -106,7 +118,6 @@ function RegisterPage() {
             label="Email Address"
             name="email"
             autoComplete="email"
-            onChange={handleChange}
             inputRef={register({
               required: 'O email é obrigatório',
               pattern: {
@@ -116,63 +127,103 @@ function RegisterPage() {
             })}
             helperText={errors.email && errors.email.message}
           />
-          <TextField
+          <FormControl
+            className={classes.textField}
+            variant="outlined"
             error={!!errors.password}
-            variant="outlined"
             margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Senha"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            onChange={handleChange}
-            inputRef={register({
-              required: 'A senha é obrigatória',
-              validate: {
-                goodPassword: (value) =>
-                  validation.goodPassword(value) ||
-                  'Deve ter no mínimo 8 caracteres e conter letras maiúsculas e minúsculas e números',
-              },
-            })}
-            helperText={errors.password && errors.password.message}
-          />
-          <TextField
-            error={!!errors.repeatPassword}
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            name="repeatPassword"
-            label="Repita a senha novamente"
-            type="password"
-            id="repeatPassword"
-            autoComplete="current-repeatPassword"
-            onChange={handleChange}
-            inputRef={register({
-              required: 'A senha é obrigatória',
-              validate: {
-                sameAs: (value) => {
-                  const { password } = getValues();
-                  return (
-                    validation.sameAs(value, password) ||
-                    'A senhas devem ser iguais'
-                  );
+          >
+            <InputLabel htmlFor="outlined-adornment-password">
+              Senha *
+            </InputLabel>
+            <OutlinedInput
+              id="outlined-adornment-password"
+              type={user.showPassword ? 'text' : 'password'}
+              name="password"
+              inputRef={register({
+                required: 'A senha é obrigatória',
+                validate: {
+                  goodPassword: (value) =>
+                    validation.goodPassword(value) ||
+                    'Deve ter no mínimo 8 caracteres e conter letras maiúsculas e minúsculas e números',
                 },
-                goodPassword: (value) =>
-                  validation.goodPassword(value) ||
-                  'Deve ter no mínimo 8 caracteres e conter letras maiúsculas e minúsculas e números',
-              },
-            })}
-            helperText={errors.repeatPassword && errors.repeatPassword.message}
-          />
+              })}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => handleClickShowPassword('showPassword')}
+                    onMouseDown={handleMouseDownPassword}
+                    edge="end"
+                  >
+                    {user.showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              labelWidth={70}
+            />
+            <FormHelperText id="helper-password">
+              {errors.password && errors.password.message}
+            </FormHelperText>
+          </FormControl>
+          <FormControl
+            className={classes.textField}
+            variant="outlined"
+            error={!!errors.repeatPassword}
+            margin="normal"
+          >
+            <InputLabel htmlFor="outlined-adornment-repeat-password">
+              Repita a senha novamente *
+            </InputLabel>
+            <OutlinedInput
+              id="outlined-adornment-repeat-password"
+              type={user.showRepeatPassword ? 'text' : 'password'}
+              name="repeatPassword"
+              inputRef={register({
+                required: 'A senha é obrigatória',
+                validate: {
+                  sameAs: (value) => {
+                    const { password } = getValues();
+                    return (
+                      validation.sameAs(value, password) ||
+                      'A senhas devem ser iguais'
+                    );
+                  },
+                  goodPassword: (value) =>
+                    validation.goodPassword(value) ||
+                    'Deve ter no mínimo 8 caracteres e conter letras maiúsculas e minúsculas e números',
+                },
+              })}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() =>
+                      handleClickShowPassword('showRepeatPassword')
+                    }
+                    onMouseDown={handleMouseDownPassword}
+                    edge="end"
+                  >
+                    {user.showRepeatPassword ? (
+                      <Visibility />
+                    ) : (
+                      <VisibilityOff />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              }
+              labelWidth={200}
+            />
+            <FormHelperText id="helper-password">
+              {errors.repeatPassword && errors.repeatPassword.message}
+            </FormHelperText>
+          </FormControl>
           <Button
             type="submit"
             fullWidth
             variant="contained"
             color="primary"
-            disabled={!formState.isValid}
+            disabled={registering}
             className={classes.submit}
           >
             Cadastrar

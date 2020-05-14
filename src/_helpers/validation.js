@@ -11,9 +11,6 @@ function goodPassword(password) {
 }
 
 function sameAs(repeatPassword, password) {
-  console.log(repeatPassword);
-  console.log(password);
-
   return repeatPassword === password ? true : false;
 }
 
