@@ -1,17 +1,53 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import {
+  Container,
+  Avatar,
+  TextField,
+  Typography,
+  Button,
+  Grid,
+  makeStyles,
+} from '@material-ui/core';
+import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import { useForm } from 'react-hook-form';
 
 import { authenticationActions } from '../../_actions';
+import { validation } from '../../_helpers';
+
+const useStyles = makeStyles((theme) => ({
+  paper: {
+    marginTop: theme.spacing(8),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.secondary.main,
+  },
+  form: {
+    width: '100%', // Fix IE 11 issue.
+    marginTop: theme.spacing(1),
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2),
+  },
+}));
 
 function RegisterPage() {
+  const classes = useStyles();
+  const { register, handleSubmit, errors, getValues, formState } = useForm({
+    mode: 'onBlur',
+  });
   const [user, setUser] = useState({
     name: '',
     email: '',
     password: '',
+    repeatPassword: '',
   });
 
-  const [submitted, setSubmitted] = useState(false);
   const registering = useSelector((state) => state.registration.registering);
   const dispatch = useDispatch();
 
@@ -20,78 +56,137 @@ function RegisterPage() {
     setUser((user) => ({ ...user, [name]: value }));
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-
-    setSubmitted(true);
-    if (user.name && user.email && user.password) {
+  function onSubmit() {
+    if (user.name && user.email && user.password && user.repeatPassword) {
       dispatch(authenticationActions.register(user));
     }
   }
 
   return (
-    <div className="col-lg-8 offset-lg-2">
-      <h2>Register</h2>
-      <form name="form" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Name</label>
-          <input
+    <Container maxWidth="xs">
+      <div className={classes.paper}>
+        <Avatar className={classes.avatar}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
+          Cadastro
+        </Typography>
+        <form
+          className={classes.form}
+          name="form"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+        >
+          <TextField
+            error={!!errors.name}
             type="text"
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            id="name"
+            label="Nome completo"
             name="name"
-            value={user.name}
+            autoComplete="name"
+            autoFocus
             onChange={handleChange}
-            className={
-              'form-control' + (submitted && !user.name ? ' is-invalid' : '')
-            }
+            inputRef={register({
+              required: 'O nome é obrigatório',
+            })}
+            helperText={errors.name && errors.name.message}
           />
-          {submitted && !user.name && (
-            <div className="invalid-feedback">Name is required</div>
-          )}
-        </div>
-        <div className="form-group">
-          <label>Email</label>
-          <input
+          <TextField
+            error={!!errors.email}
             type="email"
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
             name="email"
-            value={user.email}
+            autoComplete="email"
             onChange={handleChange}
-            className={
-              'form-control' + (submitted && !user.email ? ' is-invalid' : '')
-            }
+            inputRef={register({
+              required: 'O email é obrigatório',
+              pattern: {
+                value: validation.email,
+                message: 'O email digitado não é um e-mail valido',
+              },
+            })}
+            helperText={errors.email && errors.email.message}
           />
-          {submitted && !user.email && (
-            <div className="invalid-feedback">Email is required</div>
-          )}
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
+          <TextField
+            error={!!errors.password}
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
             name="password"
-            value={user.password}
+            label="Senha"
+            type="password"
+            id="password"
+            autoComplete="current-password"
             onChange={handleChange}
-            className={
-              'form-control' +
-              (submitted && !user.password ? ' is-invalid' : '')
-            }
+            inputRef={register({
+              required: 'A senha é obrigatória',
+              validate: {
+                goodPassword: (value) =>
+                  validation.goodPassword(value) ||
+                  'Deve ter no mínimo 8 caracteres e conter letras maiúsculas e minúsculas e números',
+              },
+            })}
+            helperText={errors.password && errors.password.message}
           />
-          {submitted && !user.password && (
-            <div className="invalid-feedback">Password is required</div>
-          )}
-        </div>
-        <div className="form-group">
-          <button className="btn btn-primary" disabled={registering}>
-            {registering && (
-              <span className="spinner-border spinner-border-sm mr-1"></span>
-            )}
-            Register
-          </button>
-          <Link to="/login" className="btn btn-link">
-            Cancel
-          </Link>
-        </div>
-      </form>
-    </div>
+          <TextField
+            error={!!errors.repeatPassword}
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="repeatPassword"
+            label="Repita a senha novamente"
+            type="password"
+            id="repeatPassword"
+            autoComplete="current-repeatPassword"
+            onChange={handleChange}
+            inputRef={register({
+              required: 'A senha é obrigatória',
+              validate: {
+                sameAs: (value) => {
+                  const { password } = getValues();
+                  return (
+                    validation.sameAs(value, password) ||
+                    'A senhas devem ser iguais'
+                  );
+                },
+                goodPassword: (value) =>
+                  validation.goodPassword(value) ||
+                  'Deve ter no mínimo 8 caracteres e conter letras maiúsculas e minúsculas e números',
+              },
+            })}
+            helperText={errors.repeatPassword && errors.repeatPassword.message}
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            disabled={!formState.isValid}
+            className={classes.submit}
+          >
+            Cadastrar
+          </Button>
+          <Grid container>
+            <Grid item>
+              <Link to="/login" variant="body2">
+                {'Você já tem um conta? faça Login'}
+              </Link>
+            </Grid>
+          </Grid>
+        </form>
+      </div>
+    </Container>
   );
 }
 

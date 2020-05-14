@@ -1,15 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useForm } from 'react-hook-form';
+// import validation from '../../_helpers';
+import {
+  Container,
+  makeStyles,
+  Avatar,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+} from '@material-ui/core';
+import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 
 import { authenticationActions } from '../../_actions';
+import { validation } from '../../_helpers';
+
+const useStyles = makeStyles((theme) => ({
+  paper: {
+    marginTop: theme.spacing(8),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.secondary.main,
+  },
+  form: {
+    width: '100%', // Fix IE 11 issue.
+    marginTop: theme.spacing(1),
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2),
+  },
+}));
 
 function LoginPage() {
+  const classes = useStyles();
+  const { register, handleSubmit, errors } = useForm();
   const [inputs, setInputs] = useState({
     email: '',
     password: '',
   });
-  const [submitted, setSubmitted] = useState(false);
   const { email, password } = inputs;
   const loggingIn = useSelector((state) => state.authentication.loggingIn);
   const dispatch = useDispatch();
@@ -21,62 +55,83 @@ function LoginPage() {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-
-    setSubmitted(true);
+  function onSubmit() {
     if (email && password) {
       dispatch(authenticationActions.login(email, password));
     }
   }
 
   return (
-    <div className="col-lg-8 offset-lg-2">
-      <h2>Login</h2>
-      <form name="form" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="text"
+    <Container maxWidth="xs">
+      <div className={classes.paper}>
+        <Avatar className={classes.avatar}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
+          Login
+        </Typography>
+        <form
+          className={classes.form}
+          name="form"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+        >
+          <TextField
+            error={!!errors.email}
+            type="email"
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
             name="email"
-            value={email}
+            autoComplete="email"
+            autoFocus
             onChange={handleChange}
-            className={
-              'form-control' + (submitted && !email ? ' is-invalid' : '')
-            }
+            inputRef={register({
+              required: 'O email é obrigatório',
+              pattern: {
+                value: validation.email,
+                message: 'O email digitado não é um e-mail valido',
+              },
+            })}
+            helperText={errors.email && errors.email.message}
           />
-          {submitted && !email && (
-            <div className="invalid-feedback">Email is required</div>
-          )}
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
+          <TextField
+            error={!!errors.password}
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
             name="password"
-            value={password}
+            label="Senha"
+            type="password"
+            id="password"
+            autoComplete="current-password"
             onChange={handleChange}
-            className={
-              'form-control' + (submitted && !password ? ' is-invalid' : '')
-            }
+            inputRef={register({ required: 'A senha é obrigatória' })}
+            helperText={errors.password && errors.password.message}
           />
-          {submitted && !password && (
-            <div className="invalid-feedback">Password is required</div>
-          )}
-        </div>
-        <div className="form-group">
-          <button className="btn btn-primary" disabled={loggingIn}>
-            {loggingIn && (
-              <span className="spinner-border spinner-border-sm mr-1"></span>
-            )}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            className={classes.submit}
+          >
             Login
-          </button>
-          <Link to="/register" className="btn btn-link">
-            Register
-          </Link>
-        </div>
-      </form>
-    </div>
+          </Button>
+          <Grid container>
+            <Grid item>
+              <Link to="/register" variant="body2">
+                {'Você ainda não tem conta? Cadastre-se'}
+              </Link>
+            </Grid>
+          </Grid>
+        </form>
+      </div>
+    </Container>
   );
 }
 
